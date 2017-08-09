@@ -74,7 +74,7 @@ public class ProvisionHandler {
 				params.listener.onMessage(message+"\n", false);
 			}
 		});
-		thread.run();
+		thread.start();
 	}
 	
 	public static String provision(ProvisionParams params) {

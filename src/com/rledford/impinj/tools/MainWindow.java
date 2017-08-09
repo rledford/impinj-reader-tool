@@ -136,6 +136,7 @@ public class MainWindow implements ThreadListener{
 		
 		txtMessages = new Text(shlImpinjReaderTool, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		FormData fd_txtMessages = new FormData();
+		fd_txtMessages.right = new FormAttachment(100, -10);
 		txtMessages.setLayoutData(fd_txtMessages);
 		txtMessages.setEditable(false);
 		
@@ -161,7 +162,6 @@ public class MainWindow implements ThreadListener{
 				}
 			}
 		});
-		fd_txtMessages.right = new FormAttachment(btnSaveMessges, 0, SWT.RIGHT);
 		fd_txtMessages.bottom = new FormAttachment(btnSaveMessges, -6);
 		FormData fd_btnSaveMessges = new FormData();
 		fd_btnSaveMessges.right = new FormAttachment(100, -10);
@@ -247,8 +247,8 @@ public class MainWindow implements ThreadListener{
 		btnSend = new Button(shlImpinjReaderTool, SWT.NONE);
 		fd_txtMessages.left = new FormAttachment(btnSend, 6);
 		FormData fd_btnSend = new FormData();
+		fd_btnSend.right = new FormAttachment(txtCommands, 78, SWT.RIGHT);
 		fd_btnSend.left = new FormAttachment(txtCommands, 6);
-		fd_btnSend.right = new FormAttachment(100, -271);
 		fd_btnSend.top = new FormAttachment(lblCommands, -7, SWT.TOP);
 		btnSend.setLayoutData(fd_btnSend);
 		btnSend.addSelectionListener(new SelectionAdapter() {
@@ -261,9 +261,9 @@ public class MainWindow implements ThreadListener{
 		
 		tabFolder = new CTabFolder(shlImpinjReaderTool, SWT.BORDER);
 		FormData fd_tabFolder = new FormData();
-		fd_tabFolder.right = new FormAttachment(lblCommands, 421);
-		fd_tabFolder.bottom = new FormAttachment(btnSaveMessges, 0, SWT.BOTTOM);
+		fd_tabFolder.bottom = new FormAttachment(100, -10);
 		fd_tabFolder.top = new FormAttachment(btnSend, 1);
+		fd_tabFolder.right = new FormAttachment(lblCommands, 421);
 		fd_tabFolder.left = new FormAttachment(lblCommands, 6, SWT.LEFT);
 		tabFolder.setLayoutData(fd_tabFolder);
 		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
