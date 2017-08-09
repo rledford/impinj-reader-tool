@@ -2,6 +2,8 @@ package com.rledford.impinj.tools;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -28,10 +30,10 @@ import org.eclipse.swt.widgets.Text;
 
 import com.rledford.impinj.tools.ProvisionHandler.ProvisionParams;
 
-public class MainWindow implements CommandListner{
+public class MainWindow implements ThreadListener{
 
 	protected Shell shlImpinjReaderTool;
-	private Text txtHost;
+	private Text txtReaderIp;
 	private Text txtPort;
 	private Text txtUsername;
 	private Label lblUsername;
@@ -41,6 +43,8 @@ public class MainWindow implements CommandListner{
 	private Button btnSend;
 	
 	private CommandHandler commandHandler = new CommandHandler();
+	private String dateFormatPattern = "hh:mm:ss.SSS";
+	
 	private Text txtCommands;
 	private Label lblCommands;
 	private Button btnSaveMessges;
@@ -79,6 +83,17 @@ public class MainWindow implements CommandListner{
 	private Label lblBroadcast;
 	private Text txtStaticBroadcast;
 	private Button btnSetStaticIp;
+	private CTabItem tbtmProvision;
+	private Composite composite_3;
+	private Label lblItemSenseIp;
+	private Text txtItemSenseIp;
+	private Label lblAgentId;
+	private Text txtAgentId;
+	private Text txtPathToPem;
+	private Button btnProvision;
+	private Button btnSelectPem;
+	private Label lblApiKey;
+	private Text txtApiKey;
 
 	/**
 	 * Launch the application.
@@ -159,15 +174,14 @@ public class MainWindow implements CommandListner{
 		FormData fd_lblHost = new FormData();
 		fd_lblHost.top = new FormAttachment(0, 10);
 		lblHost.setLayoutData(fd_lblHost);
-		lblHost.setText("Host");
+		lblHost.setText("Reader IP");
 		
-		txtHost = new Text(shlImpinjReaderTool, SWT.BORDER);
-		fd_lblHost.right = new FormAttachment(txtHost, -6);
-		FormData fd_txtHost = new FormData();
-		fd_txtHost.left = new FormAttachment(0, 72);
-		fd_txtHost.top = new FormAttachment(0, 7);
-		txtHost.setLayoutData(fd_txtHost);
-		txtHost.setText("192.168.1.8");
+		txtReaderIp = new Text(shlImpinjReaderTool, SWT.BORDER);
+		fd_lblHost.right = new FormAttachment(txtReaderIp, -6);
+		FormData fd_txtReaderIp = new FormData();
+		fd_txtReaderIp.left = new FormAttachment(0, 72);
+		fd_txtReaderIp.top = new FormAttachment(0, 7);
+		txtReaderIp.setLayoutData(fd_txtReaderIp);
 		
 		lblUsername = new Label(shlImpinjReaderTool, SWT.NONE);
 		FormData fd_lblUsername = new FormData();
@@ -178,9 +192,9 @@ public class MainWindow implements CommandListner{
 		
 		txtUsername = new Text(shlImpinjReaderTool, SWT.BORDER);
 		FormData fd_txtUsername = new FormData();
-		fd_txtUsername.right = new FormAttachment(txtHost, 0, SWT.RIGHT);
+		fd_txtUsername.right = new FormAttachment(txtReaderIp, 0, SWT.RIGHT);
 		fd_txtUsername.top = new FormAttachment(lblUsername, -3, SWT.TOP);
-		fd_txtUsername.left = new FormAttachment(txtHost, 0, SWT.LEFT);
+		fd_txtUsername.left = new FormAttachment(txtReaderIp, 0, SWT.LEFT);
 		txtUsername.setLayoutData(fd_txtUsername);
 		txtUsername.setText("root");
 		
@@ -193,7 +207,7 @@ public class MainWindow implements CommandListner{
 		
 		txtCommands = new Text(shlImpinjReaderTool, SWT.BORDER);
 		FormData fd_txtCommands = new FormData();
-		fd_txtCommands.left = new FormAttachment(txtHost, 0, SWT.LEFT);
+		fd_txtCommands.left = new FormAttachment(txtReaderIp, 0, SWT.LEFT);
 		fd_txtCommands.right = new FormAttachment(lblCommands, 285, SWT.RIGHT);
 		fd_txtCommands.top = new FormAttachment(lblCommands, -3, SWT.TOP);
 		txtCommands.setLayoutData(fd_txtCommands);
@@ -215,7 +229,7 @@ public class MainWindow implements CommandListner{
 		lblPassword.setText("Password");
 		
 		Label lblPort = new Label(shlImpinjReaderTool, SWT.RIGHT);
-		fd_txtHost.right = new FormAttachment(lblPort, -34);
+		fd_txtReaderIp.right = new FormAttachment(lblPort, -34);
 		FormData fd_lblPort = new FormData();
 		fd_lblPort.top = new FormAttachment(lblHost, 0, SWT.TOP);
 		fd_lblPort.right = new FormAttachment(lblPassword, 0, SWT.RIGHT);
@@ -503,7 +517,99 @@ public class MainWindow implements CommandListner{
 			}
 		});
 		btnNTPDisable.setText("Disable");
-		shlImpinjReaderTool.setTabList(new Control[]{txtHost, txtPort, txtUsername, txtPassword, txtCommands});
+		
+		tbtmProvision = new CTabItem(tabFolder, SWT.NONE);
+		tbtmProvision.setText("Provision");
+		
+		Composite composite_2 = new Composite(tabFolder, SWT.NONE);
+		tbtmProvision.setControl(composite_2);
+		composite_2.setLayout(new FormLayout());
+		
+		Group grpParameters = new Group(composite_2, SWT.NONE);
+		grpParameters.setLayout(new FormLayout());
+		FormData fd_grpParameters = new FormData();
+		fd_grpParameters.top = new FormAttachment(0, 10);
+		fd_grpParameters.left = new FormAttachment(0, 10);
+		fd_grpParameters.bottom = new FormAttachment(0, 187);
+		fd_grpParameters.right = new FormAttachment(0, 399);
+		grpParameters.setLayoutData(fd_grpParameters);
+		grpParameters.setText("Parameters");
+		
+		composite_3 = new Composite(grpParameters, SWT.NONE);
+		composite_3.setLayout(new GridLayout(4, false));
+		FormData fd_composite_3 = new FormData();
+		fd_composite_3.top = new FormAttachment(0);
+		fd_composite_3.left = new FormAttachment(0);
+		fd_composite_3.right = new FormAttachment(0, 370);
+		fd_composite_3.bottom = new FormAttachment(0, 150);
+		composite_3.setLayoutData(fd_composite_3);
+		
+		lblItemSenseIp = new Label(composite_3, SWT.NONE);
+		lblItemSenseIp.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblItemSenseIp.setText("ItemSense IP");
+		
+		txtItemSenseIp = new Text(composite_3, SWT.BORDER);
+		txtItemSenseIp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(composite_3, SWT.NONE);
+		new Label(composite_3, SWT.NONE);
+		
+		lblAgentId = new Label(composite_3, SWT.NONE);
+		lblAgentId.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAgentId.setText("Agent ID");
+		
+		txtAgentId = new Text(composite_3, SWT.BORDER);
+		txtAgentId.setText("SpeedwayR-XX-XX-XX");
+		txtAgentId.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(composite_3, SWT.NONE);
+		new Label(composite_3, SWT.NONE);
+		
+		lblApiKey = new Label(composite_3, SWT.NONE);
+		lblApiKey.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblApiKey.setText("API Key");
+		
+		txtApiKey = new Text(composite_3, SWT.BORDER);
+		txtApiKey.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		
+		btnSelectPem = new Button(composite_3, SWT.NONE);
+		btnSelectPem.addSelectionListener(new SelectionAdapter() {
+			Shell shell = shlImpinjReaderTool;
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+				String rVal = dialog.open();
+				if (rVal != null && rVal.trim().length() > 0) {
+					txtPathToPem.setText(rVal);
+				}
+			}
+		});
+		btnSelectPem.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnSelectPem.setText("Select");
+		
+		txtPathToPem = new Text(composite_3, SWT.BORDER);
+		txtPathToPem.setText("myItemSense.pem");
+		txtPathToPem.setEditable(false);
+		txtPathToPem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		new Label(composite_3, SWT.NONE);
+		new Label(composite_3, SWT.NONE);
+		new Label(composite_3, SWT.NONE);
+		
+		btnProvision = new Button(composite_3, SWT.NONE);
+		btnProvision.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ProvisionParams params = new ProvisionParams();
+				params.itemSenseIp = txtItemSenseIp.getText();
+				params.readerIp = txtReaderIp.getText();
+				params.apiKey = txtApiKey.getText();
+				params.agentId = txtAgentId.getText();
+				params.pathToPemFile = txtPathToPem.getText();
+				params.listener = MainWindow.this;
+				ProvisionHandler.provisionAsync(params);
+			}
+		});
+		btnProvision.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnProvision.setText("Provision");
+		shlImpinjReaderTool.setTabList(new Control[]{txtReaderIp, txtPort, txtUsername, txtPassword, txtCommands});
 		
 		this.shlImpinjReaderTool.addListener(SWT.Close, new Listener() {
 			@Override
@@ -516,7 +622,7 @@ public class MainWindow implements CommandListner{
 		tbtmNetwork.getParent().setSelection(0);
 		ProvisionHandler.disableSSLCertificateChecking();
 		
-		ProvisionParams params = new ProvisionParams();
+		/*ProvisionParams params = new ProvisionParams();
 		byte[] cert = ProvisionHandler.loadPemFile("/Users/rledford/eclipse-workspace/impinj-reader-config/localItemSense.pem");
 		params.readerIp = "192.168.1.8";
 		params.itemSenseIp = "192.168.1.19";
@@ -524,6 +630,7 @@ public class MainWindow implements CommandListner{
 		params.apiKey = "6ea9d358-d9ff-4dcc-a622-d44e461906bf";
 		params.pathToPemFile = "/Users/rledford/eclipse-workspace/impinj-reader-config/localItemSense.pem";
 		ProvisionHandler.provision(params);
+		*/
 	}
 	
 	/*
@@ -531,7 +638,7 @@ public class MainWindow implements CommandListner{
 	 */
 	private CommandHandler.Params createCommandParams() {
 		return new CommandHandler.Params(
-				txtHost.getText(),
+				txtReaderIp.getText(),
 				txtUsername.getText(),
 				txtPassword.getText(),
 				Integer.parseInt(txtPort.getText()),
@@ -543,7 +650,7 @@ public class MainWindow implements CommandListner{
 	 */
 	private CommandHandler.Params createCommandParams(String command) {
 		return new CommandHandler.Params(
-				txtHost.getText(),
+				txtReaderIp.getText(),
 				txtUsername.getText(),
 				txtPassword.getText(),
 				Integer.parseInt(txtPort.getText()),
@@ -551,14 +658,16 @@ public class MainWindow implements CommandListner{
 	}
 
 	@Override
-	public void onMessage(String message) {
+	public void onMessage(String message, boolean timestamp) {
 		// TODO Auto-generated method stub
-		System.out.println("SUCCESS: " + message);
 		Display.getDefault().asyncExec(new Runnable() {
-			
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
+				if (timestamp) {
+					Date date = new Date();
+					SimpleDateFormat formatter = new SimpleDateFormat(dateFormatPattern);
+					txtMessages.append(formatter.format(date) + "\n");
+				}
 				txtMessages.append(message+"\n");
 			}
 		});

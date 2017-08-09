@@ -35,6 +35,7 @@ public class ProvisionHandler {
 		public String agentId;
 		public String apiKey;
 		public String pathToPemFile;
+		public ThreadListener listener;
 	}
 	
 	public static String quote(String str) {
@@ -42,8 +43,7 @@ public class ProvisionHandler {
 	}
 	
 	public static byte[] encode(byte[] bytes) {
-		byte[] b = Base64.getEncoder().encode(bytes);
-		return b;
+		return Base64.getEncoder().encode(bytes);
 	}
 	
 	public static byte[] encode(String str) {
@@ -64,37 +64,43 @@ public class ProvisionHandler {
 		}
 	}
 	
-	public static String provision(ProvisionParams params) {
-		return provision(params.readerIp, params.agentId, params.itemSenseIp, params.apiKey, params.pathToPemFile);
+	public static void provisionAsync(ProvisionParams params) {
+		Thread thread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				params.listener.onMessage("* provision reader *", true);
+				String message = provision(params);
+				params.listener.onMessage(message+"\n", false);
+			}
+		});
+		thread.run();
 	}
 	
-	public static String provision(String readerIp, String agentId, String itemSenseIp, String apiKey, String pathToPem) {
+	public static String provision(ProvisionParams params) {
 		URL url = null;
 		HttpsURLConnection connection = null;
 		OutputStream os;
 		int responseCode = -1;
-		byte[] pem = loadPemFile(pathToPem);
+		byte[] pem = loadPemFile(params.pathToPemFile);
 		
 		if (pem == null) { return "Failed to load .pem file"; }
 		
 		String encodedPem = new String(encode(pem));
 		String payload = PAYLOAD
-				.replace("{baseUrl}", quote(ITEMSENSE_URI.replace("{ip}", itemSenseIp)))
-				.replace("{agentId}", quote(agentId))
-				.replace("{apiKey}", quote(apiKey.toString()))
+				.replace("{baseUrl}", quote(ITEMSENSE_URI.replace("{ip}", params.itemSenseIp)))
+				.replace("{agentId}", quote(params.agentId))
+				.replace("{apiKey}", quote(params.apiKey.toString()))
 				.replace("{serverCert}", quote(new String(encodedPem)));
 
 		try {
-			url = new URL(READER_URI.replace("{ip}", readerIp));
+			url = new URL(READER_URI.replace("{ip}", params.readerIp));
 		} catch (MalformedURLException e) {
 			System.out.println(e);
 			return e.toString();
 		}
-		System.out.println(url);
-		System.out.println(payload);
 		try {
 			connection = (HttpsURLConnection)url.openConnection();
-			System.out.println("opened connection");
 			connection.setDoInput(true);
 			connection.setDoOutput(true);
 			connection.setInstanceFollowRedirects(false);
@@ -109,23 +115,20 @@ public class ProvisionHandler {
 					return true;
 				}
 			});
-			System.out.println("set headers");
+			
 			os = connection.getOutputStream();
-			System.out.println("acquired output stream");
 			os.write(payload.getBytes());
-			System.out.println("sent payload");
 			os.flush();
 			os.close();
 
 			responseCode = connection.getResponseCode();
+			
 		} catch (IOException io) {
 			System.out.println(io.getMessage());
 			return io.getMessage();
 		}
-		System.out.println(responseCode);
 		
 		if (connection != null) {
-			System.out.println("reader response");
 			if (responseCode == 200) {
 				return "Reader provisioned successfully.";
 			}
@@ -146,6 +149,7 @@ public class ProvisionHandler {
 				}
 			}
 			if (responseCode >= 400) {
+				if (responseCode == 401) { return "Authentication failed - check API key and PEM file"; }
 				try {
 					BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 					String inputString;
@@ -162,7 +166,8 @@ public class ProvisionHandler {
 				}
 			}
 		}
-		return "";
+		
+		return "Unable to connect to the reader";
 	}
 	
 	/**
@@ -170,7 +175,6 @@ public class ProvisionHandler {
      * aid testing on a local box, not for use on production.
      */
     public static void disableSSLCertificateChecking() {
-    		System.out.println("disabling ssl");
         TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {
                 return null;

@@ -16,11 +16,5 @@
 	<classpathentry kind="lib" path="/Users/rledford/.p2/pool/plugins/org.eclipse.ui.forms_3.7.100.v20170517-1755.jar" sourcepath="/Users/rledford/.p2/pool/plugins/org.eclipse.ui.forms_3.7.100.v20170517-1755.jar"/>
 	<classpathentry kind="lib" path="libs/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
-	<classpathentry kind="lib" path="libs/jcabi-ssh-1.5.2.jar"/>
-	<classpathentry kind="lib" path="libs/commons-io-2.5.jar"/>
-	<classpathentry kind="lib" path="libs/commons-lang3-3.6.jar"/>
-	<classpathentry kind="lib" path="libs/jcabi-log-0.17.2.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-api-1.7.25.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-simple-1.7.25.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
